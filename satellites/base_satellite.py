@@ -1,39 +1,38 @@
-from langchain import OpenAI, LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
+
 
 from abc import ABC, abstractmethod
-from typing import List,Dict,Any
+from typing import  Dict, Any
 
 
-class  BaseSatellite(ABC):
-    def __init__(self,name:str,specialty:str):
+class VegapunkSatellite(ABC):
+    def __init__(self, name: str, specialty: str):
         self.name = name
         self.specialty = specialty
         self.knowledge_base = {}
         self.task_queue = []
 
-
     @abstractmethod
-    def process_task(self,task:Dict[str,Any]) -> Dict[str,Any]:
+    def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         """
         Traite une tache specifique au satellite
         a implementer dans chaque classe de satellite specifique
         """
         pass
-    def add_to_knowledge_base(self,key:str,value:Any):
+
+    def add_to_knowledge_base(self, key: str, value: Any):
         # Ajoute une information a la base de connaissance du satellite
         self.knowledge_base[key] = value
-    def get_from_knowledge_base(self,key:str) -> Any:
+
+    def get_from_knowledge_base(self, key: str) -> Any:
         # Recupere une information de la base de connaissance du satellite
         return self.knowledge_base.get(key)
 
-    def add_task(self,task:Dict[str,Any]):
+    def add_task(self, task: Dict[str, Any]):
         # Ajoute une tache a la file d'attente du satellite
         self.task_queue.append(task)
 
-    def get_next_task(self) -> Dict[str,Any]:
-        # Recupere la prochaine tache a traiter
+    def get_next_task(self) -> Dict[str, Any]:
+        """Récupère et supprime la prochaine tâche de la file d'attente."""
         if self.task_queue:
             return self.task_queue.pop(0)
         return None
@@ -41,37 +40,25 @@ class  BaseSatellite(ABC):
     def report_status(self):
         # Rapporte le status du satellite
         return {
-            "name":self.name,
-            "specialty":self.specialty,
-            "knowledge_base":self.knowledge_base,
-            "task_queue":self.task_queue,
-            "task_pending":len(self.task_queue),
+            "name": self.name,
+            "specialty": self.specialty,
+            "knowledge_base": self.knowledge_base,
+            "task_queue": self.task_queue,
+            "task_pending": len(self.task_queue),
             "Knowledge_base_size": len(self.knowledge_base),
         }
 
     @abstractmethod
-    def communicate_with_stellar(self,message:Dict[str,Any]) -> Dict[str,Any]:
+    def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
         """
          Méthode pour communiquer avec le satellite manager (Stellar).
         À implémenter dans chaque classe de satellite spécifique.
         """
         pass
 
-    def update_from_punkrocord(self) -> None:
+    def update_from_punkrecord(self) -> None:
         # Methode pour mettre a jour de la base de connaissance local du satellite depuis punkrecord
         pass
-
-
-
-
-
-
-
-
-
-
-
-
 
 #
 #
