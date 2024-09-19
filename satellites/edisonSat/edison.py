@@ -1,7 +1,9 @@
-import random
-
 from satellites.base_satellite import VegapunkSatellite
 from typing import Dict,Any,List
+import logging
+import requests
+import os
+import json
 
 role = "innovation et technologie"
 fonction = "Générer des idées innovantes et évaluer leur faisabilité technique"
@@ -10,158 +12,108 @@ fonction = "Générer des idées innovantes et évaluer leur faisabilité techni
 class Edison(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Edison", specialty=role)
-        self.tech_domains = ["IA", "Robotique", "Énergie Renouvelable", "Nanotechnologie", "Biotechnologie"]
-        self.innovation_database = {}
+        self.llm_api_key = os.getenv("LLM_API_KEY")
+        self.llm_api_url = "https://api.openai.com/v1/chat/completions"  # Example using OpenAI's API
+        self.external_apis = {
+            "math": "http://api.mathjs.org/v4/",
+            "wolfram": "http://api.wolframalpha.com/v1/result"
+        }
+        logging.basicConfig(filename='edison_log.txt', level=logging.INFO)
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        task_type = task.get('type')
-        if task_type == "generate_idea":
-            return self._generate_innovation_idea(task['domain'])
-        elif task_type == "evaluate_feasibility":
-            return self._evaluate_technical_feasibility(task['idea'])
-        elif task_type == "simulate_prototype":
-            return self._simulate_prototype(task['idea'])
+        task_type = task.get("type")
+        if task_type == "solve_logic_problem":
+            result = self.solve_logic_problem(task["problem"])
+        elif task_type == "perform_complex_calculation":
+            result = self.perform_complex_calculation(task["expression"])
+        elif task_type == "generate_innovation":
+            result = self.generate_innovation(task["domain"])
+        elif task_type == "analyze_data":
+            result = self.analyze_data(task["data"])
         else:
-            return {"error": "Tâche non reconnue"}
+            result = f"Tâche non reconnue : {task_type}"
 
-    def _generate_innovation_idea(self, domain: str) -> Dict[str, Any]:
-        if domain not in self.tech_domains:
-            return {"error": f"Domaine non reconnu. Choisissez parmi : {', '.join(self.tech_domains)}"}
+        self.log_activity(f"Tâche traitée : {task_type}, Résultat : {result}")
+        return {"result": result}
 
-        ideas = {
-            "IA": ["Assistant virtuel avancé", "Système de prédiction du comportement humain",
-                   "IA pour la composition musicale"],
-            "Robotique": ["Robot domestique polyvalent", "Exosquelette médical",
-                          "Nano-robots pour la réparation cellulaire"],
-            "Énergie Renouvelable": ["Panneau solaire à haute efficacité", "Générateur d'énergie par fusion froide",
-                                     "Capteur d'énergie atmosphérique"],
-            "Nanotechnologie": ["Matériau auto-réparant", "Nanofiltre pour la purification de l'eau",
-                                "Nanocapteurs médicaux"],
-            "Biotechnologie": ["Organes artificiels bio-imprimés", "Thérapie génique personnalisée",
-                               "Plantes bioluminescentes"]
+    def solve_logic_problem(self, problem: str) -> Dict[str, Any]:
+        prompt = f"Résolvez le problème logique suivant étape par étape : {problem}"
+        response = self._query_llm(prompt)
+        return {
+            "problem": problem,
+            "solution": response,
+            "method": "LLM"
         }
 
-        idea = random.choice(ideas[domain])
-        self.innovation_database[idea] = {"domain": domain, "feasibility": None, "prototype": None}
-        return {"idea": idea, "domain": domain}
+    def perform_complex_calculation(self, expression: str) -> Dict[str, Any]:
+        try:
+            response = requests.get(f"{self.external_apis['math']}?expr={expression}")
+            result = response.text
+        except requests.RequestException as e:
+            result = f"Erreur lors du calcul : {str(e)}"
 
-    def _evaluate_technical_feasibility(self, idea: str) -> Dict[str, Any]:
-        if idea not in self.innovation_database:
-            return {"error": "Idée non reconnue. Générez d'abord une idée."}
-
-        # Simulation d'une évaluation de faisabilité
-        feasibility_score = random.uniform(0, 1)
-        challenges = ["Coût élevé", "Limitations technologiques actuelles", "Problèmes d'éthique",
-                      "Manque d'infrastructure"]
-        selected_challenges = random.sample(challenges, k=random.randint(1, 3))
-
-        feasibility_result = {
-            "score": feasibility_score,
-            "interpretation": "Très faisable" if feasibility_score > 0.8 else "Faisable" if feasibility_score > 0.5 else "Peu faisable",
-            "challenges": selected_challenges
+        return {
+            "expression": expression,
+            "result": result,
+            "method": "External API (Math.js)"
         }
 
-        self.innovation_database[idea]["feasibility"] = feasibility_result
-        return feasibility_result
-
-    def _simulate_prototype(self, idea: str) -> Dict[str, Any]:
-        if idea not in self.innovation_database:
-            return {"error": "Idée non reconnue. Générez d'abord une idée."}
-
-        if self.innovation_database[idea]["feasibility"] is None:
-            return {"error": "Évaluez d'abord la faisabilité de l'idée."}
-
-        # Simulation d'un prototype
-        success_rate = random.uniform(0, 1)
-        prototype_result = {
-            "success_rate": success_rate,
-            "status": "Succès" if success_rate > 0.7 else "Partiellement réussi" if success_rate > 0.4 else "Échec",
-            "improvements_needed": [] if success_rate > 0.7 else random.sample(
-                ["Optimisation énergétique", "Miniaturisation", "Amélioration de l'interface", "Réduction des coûts"],
-                k=random.randint(1, 3))
+    def generate_innovation(self, domain: str) -> Dict[str, Any]:
+        prompt = f"Générez une idée innovante dans le domaine de {domain}. Décrivez l'idée, son impact potentiel et les défis de mise en œuvre."
+        response = self._query_llm(prompt)
+        return {
+            "domain": domain,
+            "innovation": response,
+            "method": "LLM"
         }
 
-        self.innovation_database[idea]["prototype"] = prototype_result
-        return prototype_result
+    def analyze_data(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        # Pour cet exemple, nous allons simplement calculer quelques statistiques de base
+        # Dans une implémentation réelle, vous pourriez utiliser des bibliothèques comme pandas ou numpy
+        if not data:
+            return {"error": "Aucune donnée à analyser"}
+
+        numeric_values = [float(item['value']) for item in data if item['type'] == 'numeric']
+        if numeric_values:
+            analysis = {
+                "count": len(numeric_values),
+                "sum": sum(numeric_values),
+                "average": sum(numeric_values) / len(numeric_values),
+                "min": min(numeric_values),
+                "max": max(numeric_values)
+            }
+        else:
+            analysis = {"error": "Aucune donnée numérique trouvée pour l'analyse"}
+
+        return {
+            "data": data,
+            "analysis": analysis,
+            "method": "Internal calculation"
+        }
+
+    def _query_llm(self, prompt: str) -> str:
+        headers = {
+            "Authorization": f"Bearer {self.llm_api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        try:
+            response = requests.post(self.llm_api_url, headers=headers, json=data)
+            response.raise_for_status()
+            return response.json()['choices'][0]['message']['content']
+        except requests.RequestException as e:
+            return f"Erreur lors de la requête LLM : {str(e)}"
+
+    def log_activity(self, activity: str):
+        logging.info(activity)
 
     def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"{self.name} envoie un message à Stellar: {message}")
-        return {"Statut": "Message reçu", "message": "Stellar a bien reçu le message d'Edison"}
+        self.log_activity(f"Communication avec Stellar : {message}")
+        return {"status": "Message reçu par Stellar", "details": message}
 
-    def update_from_punkrecord(self):
-        print(f"{self.name} met à jour sa base de connaissances depuis Punkrecord")
-        # Simulation d'une mise à jour
-        new_tech = random.choice(["Quantum Computing", "Fusion nucléaire", "Interface cerveau-machine"])
-        self.add_to_knowledge_base("Nouvelle_technologie", new_tech)
-
-    def report_status(self) -> Dict[str, Any]:
-        status = super().report_status()
-        status.update({
-            "Domaines_technologiques": self.tech_domains,
-            "Idées_générées": len(self.innovation_database)
-        })
-        return status
-#
-#     # Test de la classe Edison
-# if __name__ == "__main__":
-#
-#     edison = Edison()
-#
-#     # Test de génération d'idée
-#     idea_task = {"type": "generate_idea", "domain": "IA"}
-#     idea_result = edison.process_task(idea_task)
-#     print("Idée générée:", idea_result)
-#
-#     # Test d'évaluation de faisabilité
-#     if "idea" in idea_result:
-#         feasibility_task = {"type": "evaluate_feasibility", "idea": idea_result["idea"]}
-#         feasibility_result = edison.process_task(feasibility_task)
-#         print("Évaluation de faisabilité:", feasibility_result)
-#
-#         # Test de simulation de prototype
-#         prototype_task = {"type": "simulate_prototype", "idea": idea_result["idea"]}
-#         prototype_result = edison.process_task(prototype_task)
-#         print("Simulation de prototype:", prototype_result)
-#
-#     # Test de communication avec Stellar
-#     stellar_response = edison.communicate_with_stellar({"status_update": "Nouvelle idée générée et évaluée"})
-#     print("Réponse de Stellar:", stellar_response)
-#
-#     # Test de mise à jour depuis PunkRecord
-#     edison.update_from_punkrecord()
-#
-#     # Affichage du statut final
-#     print("Statut d'Edison:", edison.report_status())
-#
-
-"""
-
-ideas = {
-            "IA": ["Assistant virtuel avancé", "Système de prédiction du comportement humain",
-                   "IA pour la composition musicale"],
-            "Robotique": ["Robot domestique polyvalent", "Exosquelette médical",
-                          "Nano-robots pour la réparation cellulaire"],
-            "Énergie Renouvelable": ["Panneau solaire à haute efficacité", "Générateur d'énergie par fusion froide",
-                                     "Capteur d'énergie atmosphérique"],
-            "Nanotechnologie": ["Matériau auto-réparant", "Nanofiltre pour la purification de l'eau",
-                                "Nanocapteurs médicaux"],
-            "Biotechnologie": ["Organes artificiels bio-imprimés", "Thérapie génique personnalisée",
-                               "Plantes bioluminescentes"],
-            "Transport": ["Véhicule autonome volant", "Hyperloop régional", "Navette spatiale réutilisable"],
-            "Espace": ["Station spatiale commerciale", "Exploration minière d'astéroïdes",
-                       "Colonie lunaire permanente"],
-            "Médical": ["Diagnostic médical précoce", "Prothèses neurales", "Thérapie génique anti-âge"],
-            "Agriculture": ["Ferme verticale automatisée", "Culture hydroponique en orbite", "Robot agriculteur autonome"],
-            "Éducation": ["Plateforme d'apprentissage adaptatif", "Tuteur virtuel intelligent",
-                          "Système de notation automatisé"],
-            "Finance": ["Blockchain pour les transactions internationales", "IA pour la gestion de portefeuille"],
-            "Divertissement": ["Réalité virtuelle interactive", "Jeu vidéo narratif génératif",
-                               "Hologrammes de concert en direct"],
-            "Communication": ["Traducteur universel en temps réel", "Réseau social décentralisé"],
-            "Sécurité": ["Surveillance intelligente des villes", "Détection précoce des cyberattaques"],
-            "Environnement": ["Capteurs de pollution intelligents", "Recyclage automatisé des déchets"],
-            "Autre": ["Innovation non-technologique", "Concept artistique"]
-
-        }
-
-"""
+    def update_from_punkrecord(self) -> None:
+        self.log_activity("Mise à jour depuis PunkRecord")
+        # Ici, vous pourriez implémenter la logique pour mettre à jour les API externes ou les paramètres du modèle LLM

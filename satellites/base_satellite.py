@@ -60,6 +60,10 @@ class VegapunkSatellite(ABC):
         # Methode pour mettre a jour de la base de connaissance local du satellite depuis punkrecord
         pass
 
+    # def communicate_with_other_satellite(self, satellite: VegapunkSatellite, message: Dict[str, Any]) -> Dict[str, Any]:
+    #     # Methode pour communiquer avec un autre satellite
+    #     pass
+
 #
 #
 # class Satellite:

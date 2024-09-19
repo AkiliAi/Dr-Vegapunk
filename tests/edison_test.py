@@ -4,36 +4,30 @@ from satellites.edisonSat.edison import Edison
 def test_edison():
     edison = Edison()
 
-    print()
+    # Ajout de tâches à la file d'attente
+    edison.add_task({"type": "solve_logic_problem",
+                     "problem": "Si A implique B, et B implique C, que peut-on dire de la relation entre A et C?"})
+    edison.add_task({"type": "perform_complex_calculation", "expression": "derivative(x^2 + 2x + 1, x)"})
+    edison.add_task({"type": "generate_innovation", "domain": "énergie renouvelable"})
+    edison.add_task({"type": "analyze_data",
+                     "data": [{"type": "numeric", "value": 10}, {"type": "numeric", "value": 20},
+                              {"type": "numeric", "value": 30}]})
 
+    # Traitement des tâches
+    while task := edison.get_next_task():
+        result = edison.process_task(task)
+        print(f"Résultat de la tâche : {result}")
 
-    # Test de génération d'idée
-    idea_task = {"type": "generate_idea", "domain": "IA"}
-    idea_result = edison.process_task(idea_task)
-    print("Idée générée:", idea_result)
+    # Affichage du statut
+    print(edison.report_status())
 
-        # Test d'évaluation de faisabilité
-    if "idea" in idea_result:
-        feasibility_task = {"type": "evaluate_feasibility", "idea": idea_result["idea"]}
-        feasibility_result = edison.process_task(feasibility_task)
-        print("Évaluation de faisabilité:", feasibility_result)
-        print()
-            # Test de simulation de prototype
-        prototype_task = {"type": "simulate_prototype", "idea": idea_result["idea"]}
-        prototype_result = edison.process_task(prototype_task)
-        print("Simulation de prototype:", prototype_result)
-    print()
-        # Test de communication avec Stellar
-    stellar_response = edison.communicate_with_stellar({"status_update": "Nouvelle idée générée et évaluée"})
-    print("Réponse de Stellar:", stellar_response)
+    # Communication avec Stellar
+    stellar_response = edison.communicate_with_stellar(
+        {"message": "Nouvelle innovation générée dans le domaine de l'énergie renouvelable"})
+    print(f"Réponse de Stellar : {stellar_response}")
 
-        # Test de mise à jour depuis PunkRecord
+    # Mise à jour depuis PunkRecord
     edison.update_from_punkrecord()
-
-    print()
-
-        # Affichage du statut final
-    print("Statut d'Edison:", edison.report_status())
 
 
 test_edison()

@@ -4,6 +4,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
+import logging
 
 role = "logique, éthique et analyse"
 fonction = "Vérifier la cohérence des informations et filtrer les informations non éthiques"
@@ -12,6 +13,7 @@ class Shaka(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Shaka", specialty=role)
         self.nlp = self._initialize_nlp_tools()
+        logging.basicConfig(filename='shaka.log', level=logging.INFO)
 
     def _initialize_nlp_tools(self):
         resources = ["stopwords", "punctuation", "averaged_perceptron_tagger", "wordnet", "punkt_tab"]

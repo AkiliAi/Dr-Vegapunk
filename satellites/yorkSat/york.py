@@ -1,6 +1,10 @@
+import psutil
+import time
+from typing import Dict, Any, List
 from satellites.base_satellite import VegapunkSatellite
+import logging
 
-role = (" Gerer les tache repetitive, les tache de routine,et la maintenance des systeme")
+role = "Gestion des ressources et maintenance système"
 
 fonction = "Gerer les tache repetitive, les resource et les maintenance des systeme"
 
@@ -8,13 +12,100 @@ fonction = "Gerer les tache repetitive, les resource et les maintenance des syst
 class York(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="York", specialty=role)
-        self.resources = {}
+        self.resource_thresholds ={
+            "cpu": 90,
+            "memory": 90,
+            "disk": 90,
+            "network": 75,
+        }
+        self.maintenance_schedule = {}
+        logging.basicConfig(filename='york.log', level=logging.INFO)
+        self.external_apis = {}
 
-    def process_task(self, task):
-        pass
+    def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        task_type = task.get("type")
+        if task_type == "check_resources":
+            result = self.check_system_resources()
+        elif task_type == "optimize_performance":
+            result = self.optimize_system_performance()
+        elif task_type == "schedule_maintenance":
+            result = self.schedule_maintenance(task["component"], task["date"])
+        elif task_type == "perform_maintenance":
+            result = self.perform_maintenance(task["component"])
+        else:
+            result = f"Tâche non reconnue : {task_type}"
 
-    def communicate_with_stellar(self, message):
-        pass
+        self.log_activity(f"Tâche traitée : {task_type}, Résultat : {result}")
+        return {"result": result}
 
-    def update_from_punkrecord(self):
-        pass
+    def check_system_resources(self) -> Dict[str, Any]:
+        cpu_usage = psutil.cpu_percent()
+        memory_usage = psutil.virtual_memory().percent
+        disk_usage = psutil.disk_usage('/').percent
+        network_usage = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
+
+        status = {
+            "cpu": "Normal" if cpu_usage < self.resource_thresholds["cpu"] else "Élevé",
+            "memory": "Normal" if memory_usage < self.resource_thresholds["memory"] else "Élevé",
+            "disk": "Normal" if disk_usage < self.resource_thresholds["disk"] else "Élevé",
+            "network": "Normal"  # Simplified for this example
+        }
+
+        return {
+            "cpu_usage": cpu_usage,
+            "memory_usage": memory_usage,
+            "disk_usage": disk_usage,
+            "network_usage": network_usage,
+            "status": status
+        }
+
+    def optimize_system_performance(self) -> Dict[str, Any]:
+        # Simulation d'optimisation du système
+        optimizations = []
+        if psutil.cpu_percent() > self.resource_thresholds["cpu"]:
+            optimizations.append("Réduction de la charge CPU")
+        if psutil.virtual_memory().percent > self.resource_thresholds["memory"]:
+            optimizations.append("Libération de mémoire")
+        if psutil.disk_usage('/').percent > self.resource_thresholds["disk"]:
+            optimizations.append("Nettoyage de l'espace disque")
+
+        return {
+            "optimizations_performed": optimizations,
+            "performance_improvement": f"{len(optimizations) * 5}%"  # Simulated improvement
+        }
+
+    def schedule_maintenance(self, component: str, date: str) -> Dict[str, Any]:
+        self.maintenance_schedule[component] = date
+        return {
+            "component": component,
+            "scheduled_date": date,
+            "status": "Maintenance programmée"
+        }
+
+    def perform_maintenance(self, component: str) -> Dict[str, Any]:
+        if component in self.maintenance_schedule:
+            # Simulation de maintenance
+            time.sleep(2)  # Simule le temps de maintenance
+            del self.maintenance_schedule[component]
+            return {
+                "component": component,
+                "status": "Maintenance effectuée",
+                "result": "Performances du composant améliorées"
+            }
+        else:
+            return {
+                "component": component,
+                "status": "Erreur",
+                "result": "Aucune maintenance programmée pour ce composant"
+            }
+
+    def log_activity(self, activity: str):
+        logging.info(activity)
+
+    def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
+        self.log_activity(f"Communication avec Stellar : {message}")
+        return {"status": "Message reçu par Stellar", "details": message}
+
+    def update_from_punkrecord(self) -> None:
+        self.log_activity("Mise à jour depuis PunkRecord")
+        # Ici, vous pourriez implémenter la logique pour mettre à jour les seuils de ressources ou les plannings de maintenance
