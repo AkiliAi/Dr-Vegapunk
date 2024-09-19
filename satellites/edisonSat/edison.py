@@ -3,6 +3,7 @@ from typing import Dict,Any,List
 import logging
 import requests
 import os
+from utils import logger
 import json
 
 role = "innovation et technologie"
@@ -18,7 +19,8 @@ class Edison(VegapunkSatellite):
             "math": "http://api.mathjs.org/v4/",
             "wolfram": "http://api.wolframalpha.com/v1/result"
         }
-        logging.basicConfig(filename='edison_log.txt', level=logging.INFO)
+        # logging.basicConfig(filename='edison_log.txt', level=logging.INFO)
+        self.logger = logger.get_logger("edison")
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
@@ -109,6 +111,10 @@ class Edison(VegapunkSatellite):
 
     def log_activity(self, activity: str):
         logging.info(activity)
+
+
+
+
 
     def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
         self.log_activity(f"Communication avec Stellar : {message}")
