@@ -1,21 +1,15 @@
 ---
 license: mit
 language:
-  - fr
-  - en
+- fr
+- en
 tags:
-  - code
-  - art
-  - text-generation-inference
+- code
+- art
+- text-generation-inference
 ---
 
-
 # Dr-Vegapunk
-
-
-
-
-
 
 **Dr-Vegapunk** est un projet inspiré du personnage de *One Piece*, visant à créer une série d'agents autonomes (ou "satellites") basés sur des modèles de langage large (LLM) pour accomplir des tâches spécifiques. Chaque satellite représente une facette de l'intelligence collective, avec des rôles spécialisés tels que l'éthique, la créativité, l'innovation, l'analyse et l'exécution.
 
@@ -60,3 +54,7 @@ Installez les dépendances nécessaires en exécutant la commande suivante :
 
 ```bash
 pip install -r requirements.txt
+
+---
+license: mit
+---
