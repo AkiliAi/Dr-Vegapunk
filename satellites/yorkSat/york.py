@@ -2,6 +2,7 @@ import psutil
 import time
 from typing import Dict, Any, List
 from satellites.base_satellite import VegapunkSatellite
+from utils.logger import get_logger
 import logging
 
 role = "Gestion des ressources et maintenance système"
@@ -19,8 +20,9 @@ class York(VegapunkSatellite):
             "network": 75,
         }
         self.maintenance_schedule = {}
-        logging.basicConfig(filename='york.log', level=logging.INFO)
+        # logging.basicConfig(filename='york.log', level=logging.INFO)
         self.external_apis = {}
+        from utils.logger import get_logger
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")

@@ -1,7 +1,7 @@
 from satellites.base_satellite import VegapunkSatellite
 from typing import Dict, Any, List
-import logging
 import random
+from utils.logger import get_logger
 
 role = " Explorer des solution non conventionnel , creatove,voir risqué"
 
@@ -14,9 +14,9 @@ class Lilith(VegapunkSatellite):
         self.idea_categories = ["Technologie", "Art", "Science", "Société", "Environnement"]
         self.innovation_levels = ["Incrémentale", "Radicale", "Disruptive"]
         self.unconventional_approaches = ["Pensée inversée", "Analogies lointaines", "Combinaison aléatoire","Contraintes extrêmes"]
-        logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
+        # logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
         self.external_apis = {}
-
+        self.logger = get_logger("lilith")
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
         if task_type == "generate_idea":

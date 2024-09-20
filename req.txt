@@ -8,5 +8,6 @@ scipy
 scikit-learn
 pandas
 psutil
-
+python-dotenv
+beautifulsoup4
 

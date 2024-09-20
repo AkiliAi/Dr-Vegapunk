@@ -6,6 +6,7 @@ from satellites.base_satellite import VegapunkSatellite
 import logging
 import subprocess
 import time
+from utils.logger import get_logger
 
 
 role = "Sécurité et Automatisation"
@@ -16,8 +17,8 @@ class Atlas(VegapunkSatellite):
         self.monitored_directories = []
         self.email_config ={}
         self.external_systems = {}
-        logging.basicConfig(filename='atlas.log', level=logging.INFO)
-
+        # logging.basicConfig(filename='atlas.log', level=logging.INFO)
+        self.logger = get_logger("atlas")
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
         if task_type == "monitor_directory":
