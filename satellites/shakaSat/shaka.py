@@ -1,5 +1,5 @@
 from satellites.base_satellite import VegapunkSatellite
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
@@ -163,13 +163,6 @@ class Shaka(VegapunkSatellite):
     def log_activity(self, activity: str):
         logging.info(activity)
 
-    def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        print(f"{self.name} envoie un message à Stellar: {message}")
-        return {"Statut": "Message reçu", "message": "Stellar a bien reçu le message"}
-
-    def update_from_punkrecord(self):
-        print(f"{self.name} met à jour sa base de connaissances depuis Punkrecord")
-        self.add_to_knowledge_base("Last_update", "Nouveaux patterns détectés dans les données")
 
     def perform_advanced_analyse(self, data: Dict[str, Any]) -> Dict[str, Any]:
         text_analyse = self._analyse_text(data.get('text', ''))
@@ -180,3 +173,33 @@ class Shaka(VegapunkSatellite):
             "Analyse_logique": logical_analyse,
             "Conclusions": "Analyse intégrale basée sur le texte et les raisonnements logiques"
         }
+
+    def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
+        print(f"{self.name} envoie un message à Stellar: {message}")
+        return {"Statut": "Message reçu", "message": "Stellar a bien reçu le message"}
+
+    def update_from_punkrecord(self):
+        print(f"{self.name} met à jour sa base de connaissances depuis Punkrecord")
+        self.add_to_knowledge_base("Last_update", "Nouveaux patterns détectés dans les données")
+        return {"Statut": "Mise à jour effectuée"}
+
+    def proccess_communicatioon(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        # logique a  shaka pour traiter le message
+        if message.get("type") == "ethics_check":
+            result = self.check_ethics(message.get("content"))
+            return {"status": "Traitement effectué", "result": result}
+        elif message.get("type") == "fact_check":
+            result = self.verify_facts(message.get("claim"))
+            return {"status": "Traitement effectué", "result": result}
+        elif message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "recommendations":
+            result = self.provide_ethical_recommendations(message.get("content"))
+            return {"status": "Traitement effectué", "result": result}
+        elif message.get("type") == "toggle_ethical_filter":
+            result = self.toggle_ethical_filter()
+            return {"status": "Traitement effectué", "result": result}
+
+
+

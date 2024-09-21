@@ -2,6 +2,7 @@ from satellites.base_satellite import VegapunkSatellite
 from typing import Dict, Any, List
 import random
 from utils.logger import get_logger
+import logging
 
 role = " Explorer des solution non conventionnel , creatove,voir risqué"
 
@@ -113,4 +114,24 @@ class Lilith(VegapunkSatellite):
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les approches créatives ou les domaines d'innovation
 
+
+    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "generate_idea":
+            idea_result = self.generate_creative_idea(message.get("domain"))
+            return {"status": "Idée générée", "result": idea_result}
+        elif message.get("type") == "solve_problem":
+            solution_result = self.propose_unconventional_solution(message.get("problem"))
+            return {"status": "Solution proposée", "result": solution_result}
+        elif message.get("type") == "brainstorm":
+            brainstorm_result = self.conduct_brainstorming_session(message.get("topic"), message.get("duration"))
+            return {"status": "Session de brainstorming effectuée", "result": brainstorm_result}
+        elif message.get("type") == "challenge_assumption":
+            assumption_result = self.challenge_assumption(message.get("assumption"))
+            return {"status": "Assomption challengée", "result": assumption_result}
+        elif message.get("type") == "status_report":
+            result = self.report_status()
+            return {"status": "Rapport de status généré", "result": result}
 

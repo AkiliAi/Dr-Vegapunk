@@ -12,14 +12,18 @@ from bs4 import BeautifulSoup
 import json
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 import requests
 import logging
 
 load_dotenv()
 
 
+# client = OpenAI(os.getenv("LLM_API_KEY"))
 
-
+client =OpenAI(
+    organization="LLM_API_KEY",
+)
 
 
 role = "mathématiques, statistiques et analyse de données"
@@ -242,3 +246,24 @@ class Pythagoras(VegapunkSatellite):
             "Opérations_disponibles": ["mean", "median", "std_dev", "correlation"]
         })
         return status
+
+
+    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+        if message.get("type")== "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "research":
+            research_result = self.conduct_research(message.get("topic"), message.get("depth"))
+            return {"status": "Recherche effectuée", "result": research_result}
+        elif message.get("type") == "information_extraction":
+            info_result = self.extract_information(message.get("content"), message.get("keywords", []))
+            return {"status": "Extraction d'information effectuée", "result": info_result}
+        elif message.get("type") == "update_constants":
+            self.mathematical_constants.update(message.get("constants", {}))
+            return {"status": "Constantes mises à jour", "result": self.mathematical_constants}
+        elif message.get("type") == "update_resources":
+            self.resources.update(message.get("resources", {}))
+            return {"status": "Ressources mises à jour", "result": self.resources}
+        elif message.get("type") == "update_external_apis":
+            self.external_apis.update(message.get("apis", {}))
+            return {"status": "APIs mises à jour", "result": self.external_apis}

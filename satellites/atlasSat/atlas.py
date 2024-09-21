@@ -124,3 +124,32 @@ class Atlas(VegapunkSatellite):
             "Monitored_directories": self.monitored_directories,
             "Email_config": self.email_config
         })
+
+
+
+    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "email_config":
+            self.email_config = message.get("content")
+            return {"status": "Configuration email mise à jour", "result": self.email_config}
+        elif message.get("type") == "system_command":
+            command_result = self.execute_system_command(message.get("command"))
+            return {"status": "Commande système exécutée", "result": command_result}
+        elif message.get("type") == "file_management":
+            file_result = self.manage_files(message.get("action"), message.get("file_path"))
+            return {"status": "Gestion de fichier effectuée", "result": file_result}
+        elif message.get("type") == "monitor_directory":
+            monitor_result = self.monitor_directory(message.get("directory"))
+            return {"status": "Surveillance de répertoire effectuée", "result": monitor_result}
+        elif message.get("type") == "email":
+            email_result = self.send_email(message.get("to"), message.get("subject"), message.get("body"))
+            return {"status": "Email envoye", "result": email_result}
+        elif message.get("type") == "status_report":
+            result = self.report_status()
+            return {"status": "Rapport de status généré", "result": result}
+        elif message.get("type") == "check_changes":
+            changes = self.check_directory_changes()
+            return {"status": "Changements vérifiés", "result": changes}
