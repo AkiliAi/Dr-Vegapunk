@@ -1,7 +1,52 @@
 from abc import ABC, abstractmethod
-from typing import  Dict, Any,Optional
+from typing import Dict, Any, Optional , List
+from langchain.graphs import StateGraph, Node
 import logging
 
+
+class VegapunkSystem():
+    def __init__(self):
+        # self.satellites = {}
+        self.graph = StateGraph()
+
+        self.shaka_node = Node(self.shaka_process)
+        self.atlas_node = Node(self.atlas_process)
+        self.edison_node = Node(self.edison_process)
+        self.lilith_node = Node(self.lilith_process)
+        self.pythagoras_node = Node(self.pythagoras_process)
+        self.york_node = Node(self.york_process)
+
+        self.graph.add_node(self.shaka_node)
+        self.graph.add_node(self.atlas_node)
+        self.graph.add_node(self.edison_node)
+        self.graph.add_node(self.lilith_node)
+        self.graph.add_node(self.pythagoras_node)
+        self.graph.add_node(self.york_node)
+
+    #     definir les transitions entre les noeuds
+    #     self.graph.add_edge(self.shaka_node, self.atlas_node)
+    #     self.graph.add_edge(self.atlas_node, self.edison_node)
+    #     self.graph.add_edge(self.edison_node, self.lilith_node)
+    def shaka_process(self, input_data):
+        pass
+
+    def atlas_process(self, input_data):
+        pass
+
+    def edison_process(self, input_data):
+        pass
+
+    def lilith_process(self, input_data):
+        pass
+
+    def pythagoras_process(self, input_data):
+        pass
+
+    def york_process(self, input_data):
+        pass
+
+    def proccess_request(self, initial_input):
+        return self.graph.run(initial_input)
 
 
 class VegapunkSatellite(ABC):
@@ -12,12 +57,30 @@ class VegapunkSatellite(ABC):
         self.task_queue = []
 
     @abstractmethod
-    def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Traite une tache specifique au satellite
-        a implementer dans chaque classe de satellite specifique
-        """
+    def think(self,task: Dict[str, Any]) -> List[str]:
         pass
+
+    @abstractmethod
+    def act(self, thought: str) -> Dict[str, Any]:
+        """Exécuter une action basée sur une pensée."""
+        pass
+
+    @abstractmethod
+    def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
+        thoughts = self.think(task)
+        results = []
+        for pensee in thoughts:
+            results = self.act(pensee)
+            results.append(results)
+
+        return self.systhesize_results(results)
+
+
+    @abstractmethod
+    def systhesize_results(self, results: List[Dict[str, Any]]) -> Dict[str, Any]:
+        pass
+
+
 
     def add_to_knowledge_base(self, key: str, value: Any):
         # Ajoute une information a la base de connaissance du satellite
@@ -61,13 +124,15 @@ class VegapunkSatellite(ABC):
         pass
 
         # Methode pour communiquer avec un autre satellite
-    def communicate_with_other_satellite(self, satellite: 'VegapunkSatellite', message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+
+    def communicate_with_other_satellite(self, satellite: 'VegapunkSatellite', message: Dict[str, Any]) -> Optional[
+        Dict[str, Any]]:
         if not isinstance(satellite, VegapunkSatellite):
             logging.error(f"Le satellite spécifié n'est pas valide :{type(satellite)}")
             return None
 
         try:
-            response = satellite.receive_communication(self.name,message)
+            response = satellite.receive_communication(self.name, message)
             logging.info(f"Communication avec {satellite.name} : {response}")
             return response
         except Exception as e:
@@ -79,39 +144,9 @@ class VegapunkSatellite(ABC):
         return self.process_communication(sender_name, message)
 
     @abstractmethod
-    def process_communication(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
+    def process_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
         """
         traite le message recu d'un autre satellite
         a implementer dans chaque classe de satellite specifique
         """
         pass
-
-
-
-# class Satellite:
-#     def __init__(self, name, specialty):
-#         self.name = name
-#         self.specialty = specialty
-#         self.llm = OpenAI(temperature=0.7)
-#         self.memory = ConversationBufferMemory(memory_key="chat_history")
-#         self.prompt = PromptTemplate(
-#             input_variables=["chat_history", "human_input", "specialty"],
-#             template="""You are {specialty}.
-#             Chat History: {chat_history}
-#             Human: {human_input}
-#             AI Assistant:"""
-#         )
-#         self.chain = LLMChain(
-#             llm=self.llm,
-#             prompt=self.prompt,
-#             memory=self.memory,
-#         )
-#
-#     def process(self, input_text):
-#         return self.chain.run(human_input=input_text, specialty=self.specialty)
-#
-#
-# # Exemple d'utilisation
-# shaka = Satellite("Shaka", "an AI specializing in wisdom and general knowledge")
-# response = shaka.process("Tell me about the importance of knowledge.")
-# print(response)
