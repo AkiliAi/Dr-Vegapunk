@@ -18,6 +18,8 @@ class Atlas(VegapunkSatellite):
         self.email_config ={}
         self.external_systems = {}
         # logging.basicConfig(filename='atlas.log', level=logging.INFO)
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example usi
         self.logger = get_logger("atlas")
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")

@@ -32,8 +32,8 @@ fonction = "Effectuer des calculs complexes et analyser des ensembles de donnée
 class Pythagoras(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Pythagoras", specialty="Role")
-        self.llm_api_key = os.getenv("LLM_API_KEY")
-        self.llm_api_url = "https://api.openai.com/v1/chat/completions"  # Example using OpenAI's API
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example using OpenAI's API
         self.research_databases = {
             "scientific": "https://api.example-scientific-db.com/search",
             "news": "https://api.example-news-db.com/search",

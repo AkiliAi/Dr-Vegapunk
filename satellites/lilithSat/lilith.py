@@ -1,3 +1,5 @@
+import os
+
 from satellites.base_satellite import VegapunkSatellite
 from typing import Dict, Any, List
 import random
@@ -18,6 +20,8 @@ class Lilith(VegapunkSatellite):
                                           "Contraintes extrêmes"]
         # logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
         self.external_apis = {}
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example usi
         self.logger = get_logger("lilith")
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:

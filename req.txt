@@ -11,4 +11,4 @@ psutil
 python-dotenv
 beautifulsoup4
 langchain-anthropic
-
+mistralai

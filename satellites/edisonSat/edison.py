@@ -13,8 +13,8 @@ fonction = "Générer des idées innovantes et évaluer leur faisabilité techni
 class Edison(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Edison", specialty=role)
-        self.llm_api_key = os.getenv("LLM_API_KEY")
-        self.llm_api_url = "https://api.openai.com/v1/chat/completions"  # Example using OpenAI's API
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example using OpenAI's API
         self.external_apis = {
             "math": "http://api.mathjs.org/v4/",
             "wolfram": "http://api.wolframalpha.com/v1/result"

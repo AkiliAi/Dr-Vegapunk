@@ -14,11 +14,6 @@ from openai import OpenAI
 
 load_dotenv()
 
-client = OpenAI(
-    organization= os.getenv("OPENAI_ORG"),
-    project= '$Dr-Vegapunk'
-
-)
 
 
 role = "logique, éthique et analyse"
@@ -29,8 +24,8 @@ class Shaka(VegapunkSatellite):
         super().__init__(name="Shaka", specialty=role)
         self.nlp = self._initialize_nlp_tools()
         # logging.basicConfig(filename='shaka.log', level=logging.INFO)
-        self.llm_api_key = os.getenv("DR_VEGAPUNG_API_KEY")
-        self.llm_api_url = "https://api.openai.com/v1/chat/completions"  # Example using OpenAI's API
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example using OpenAI's API
         self.fact_check_api = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
         self.fact_check_api_key = os.getenv("FACT_CHECK_API_KEY")
         self.ethical_filter_active = True
