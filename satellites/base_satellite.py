@@ -74,13 +74,12 @@ class VegapunkSatellite(ABC):
             logging.error(f"Erreur lors de la communication avec {satellite.name} : {str(e)}")
             return None
 
-    def receive_communication(self, message: Dict[str, Any]) -> Dict[str, Any]:
-        # Methode pour recevoir une communication d'un autre satellite
-        logging.info(f"{self.name} a reçu un message : {message}")
-        return {"status": "Message reçu","from":{self.name}, "details": message}
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} a recu un message de : {sender_name}")
+        return self.process_communication(sender_name, message)
 
     @abstractmethod
-    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
+    def process_communication(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
         """
         traite le message recu d'un autre satellite
         a implementer dans chaque classe de satellite specifique

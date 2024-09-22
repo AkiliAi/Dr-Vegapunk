@@ -14,10 +14,12 @@ class Lilith(VegapunkSatellite):
         super().__init__(name="Lilith", specialty=role)
         self.idea_categories = ["Technologie", "Art", "Science", "Société", "Environnement"]
         self.innovation_levels = ["Incrémentale", "Radicale", "Disruptive"]
-        self.unconventional_approaches = ["Pensée inversée", "Analogies lointaines", "Combinaison aléatoire","Contraintes extrêmes"]
+        self.unconventional_approaches = ["Pensée inversée", "Analogies lointaines", "Combinaison aléatoire",
+                                          "Contraintes extrêmes"]
         # logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
         self.external_apis = {}
         self.logger = get_logger("lilith")
+
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
         if task_type == "generate_idea":
@@ -114,8 +116,7 @@ class Lilith(VegapunkSatellite):
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les approches créatives ou les domaines d'innovation
 
-
-    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+    def process_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
         if message.get("type") == "task":
             task_result = self.process_task(message.get("task"))
             return {"status": "Traitement effectué", "result": task_result}
@@ -134,4 +135,9 @@ class Lilith(VegapunkSatellite):
         elif message.get("type") == "status_report":
             result = self.report_status()
             return {"status": "Rapport de status généré", "result": result}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
 
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)

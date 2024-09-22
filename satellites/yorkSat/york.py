@@ -111,3 +111,28 @@ class York(VegapunkSatellite):
     def update_from_punkrecord(self) -> None:
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les seuils de ressources ou les plannings de maintenance
+
+    def process_communication(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "resource_thresholds":
+            self.resource_thresholds = message.get("thresholds")
+            return {"status": "Seuils de ressources mis à jour", "result": self.resource_thresholds}
+        elif message.get("type") == "maintenance_schedule":
+            self.maintenance_schedule = message.get("schedule")
+            return {"status": "Planning de maintenance mis à jour", "result": self.maintenance_schedule}
+        elif message.get("type") == "external_api":
+            api_name = message.get("api_name")
+            api_config = message.get("api_config")
+            self.external_apis[api_name] = api_config
+            return {"status": "API externe ajoutée", "result": api_config}
+        else:
+            return {"status": "Message non reconnu", "result": "Aucune action effectuée"}
+
+
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+

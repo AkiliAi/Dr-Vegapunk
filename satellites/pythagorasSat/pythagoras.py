@@ -20,11 +20,11 @@ load_dotenv()
 
 
 # client = OpenAI(os.getenv("LLM_API_KEY"))
-
-client =OpenAI(
-    organization="LLM_API_KEY",
-)
-
+#
+# client =OpenAI(
+#     organization="LLM_API_KEY",
+# )
+#
 
 role = "mathématiques, statistiques et analyse de données"
 fonction = "Effectuer des calculs complexes et analyser des ensembles de données"
@@ -248,7 +248,7 @@ class Pythagoras(VegapunkSatellite):
         return status
 
 
-    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+    def process_communication(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
         if message.get("type")== "task":
             task_result = self.process_task(message.get("task"))
             return {"status": "Traitement effectué", "result": task_result}
@@ -267,3 +267,11 @@ class Pythagoras(VegapunkSatellite):
         elif message.get("type") == "update_external_apis":
             self.external_apis.update(message.get("apis", {}))
             return {"status": "APIs mises à jour", "result": self.external_apis}
+
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+

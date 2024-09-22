@@ -24,9 +24,11 @@ stellar.register_satellites(shaka)
 stellar.register_satellites(edison)
 stellar.register_satellites(york)
 
-response = Stellar.route_communication("Atlas", "York", {"type": "check_resources"})
 
-results = Stellar.broadcast_message("Atlas", {"type": "check_resources"})
+# Exemple de communication
+response = stellar.route_communication("Shaka", "Atlas", {"type": "monitor_directory", "content": "Suspicious activity detected"})
+print(response)
 
-
+# Exemple de diffusion
+results = stellar.broadcast_message("Shaka", {"type": "ethics_update", "content": "New ethical guidelines"})
 print(results)

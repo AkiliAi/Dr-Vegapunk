@@ -127,7 +127,7 @@ class Atlas(VegapunkSatellite):
 
 
 
-    def proccess_communicatioon(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+    def process_communication(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
 
         if message.get("type") == "task":
             task_result = self.process_task(message.get("task"))
@@ -153,3 +153,9 @@ class Atlas(VegapunkSatellite):
         elif message.get("type") == "check_changes":
             changes = self.check_directory_changes()
             return {"status": "Changements vérifiés", "result": changes}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)

@@ -183,23 +183,33 @@ class Shaka(VegapunkSatellite):
         self.add_to_knowledge_base("Last_update", "Nouveaux patterns détectés dans les données")
         return {"Statut": "Mise à jour effectuée"}
 
-    def proccess_communicatioon(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
-        # logique a  shaka pour traiter le message
+    def process_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        # Logique spécifique à Shaka pour traiter les communications
         if message.get("type") == "ethics_check":
-            result = self.check_ethics(message.get("content"))
-            return {"status": "Traitement effectué", "result": result}
-        elif message.get("type") == "fact_check":
-            result = self.verify_facts(message.get("claim"))
-            return {"status": "Traitement effectué", "result": result}
-        elif message.get("type") == "task":
-            task_result = self.process_task(message.get("task"))
-            return {"status": "Traitement effectué", "result": task_result}
-        elif message.get("type") == "recommendations":
-            result = self.provide_ethical_recommendations(message.get("content"))
-            return {"status": "Traitement effectué", "result": result}
-        elif message.get("type") == "toggle_ethical_filter":
-            result = self.toggle_ethical_filter()
-            return {"status": "Traitement effectué", "result": result}
+            # Effectuer une vérification éthique
+            result = self.perform_ethics_check(message.get("content"))
+            return {"status": "completed", "result": result}
+        elif message.get("type") == "security_alert":
+            # Traiter une alerte de sécurité du point de vue éthique
+            analysis = self.analyze_security_alert(message.get("content"))
+            return {"status": "analyzed", "ethical_analysis": analysis}
+        else:
+            return {"status": "unknown_message_type"}
+
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+
+    def perform_ethics_check(self, content: str) -> str:
+        # Implémentez ici la logique de vérification éthique
+        # Ceci est un exemple simplifié
+        return f"Ethical analysis of: {content}"
+
+    def analyze_security_alert(self, alert_content: str) -> str:
+        # Implémentez ici la logique d'analyse éthique des alertes de sécurité
+        # Ceci est un exemple simplifié
+        return f"Ethical implications of security alert: {alert_content}"
 
 
 

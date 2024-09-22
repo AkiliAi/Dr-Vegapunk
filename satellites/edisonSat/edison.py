@@ -123,3 +123,26 @@ class Edison(VegapunkSatellite):
     def update_from_punkrecord(self) -> None:
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les API externes ou les paramètres du modèle LLM
+
+
+    def process_communication(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "innovation":
+            innovation_result = self.generate_innovation(message.get("domain"))
+            return {"status": "Traitement effectué", "result": innovation_result}
+        elif message.get("type") == "logic_problem":
+            logic_result = self.solve_logic_problem(message.get("problem"))
+            return {"status": "Traitement effectué", "result": logic_result}
+        elif message.get("type") == "data_analysis":
+            analysis_result = self.analyze_data(message.get("data"))
+            return {"status": "Traitement effectué", "result": analysis_result}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+
