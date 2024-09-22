@@ -3,6 +3,7 @@ from typing import Dict,Any,List
 import logging
 import requests
 import os
+from utils import logger
 import json
 
 role = "innovation et technologie"
@@ -12,13 +13,14 @@ fonction = "Générer des idées innovantes et évaluer leur faisabilité techni
 class Edison(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Edison", specialty=role)
-        self.llm_api_key = os.getenv("LLM_API_KEY")
-        self.llm_api_url = "https://api.openai.com/v1/chat/completions"  # Example using OpenAI's API
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example using OpenAI's API
         self.external_apis = {
             "math": "http://api.mathjs.org/v4/",
             "wolfram": "http://api.wolframalpha.com/v1/result"
         }
-        logging.basicConfig(filename='edison_log.txt', level=logging.INFO)
+        # logging.basicConfig(filename='edison_log.txt', level=logging.INFO)
+        self.logger = logger.get_logger("edison")
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
@@ -110,6 +112,10 @@ class Edison(VegapunkSatellite):
     def log_activity(self, activity: str):
         logging.info(activity)
 
+
+
+
+
     def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
         self.log_activity(f"Communication avec Stellar : {message}")
         return {"status": "Message reçu par Stellar", "details": message}
@@ -117,3 +123,26 @@ class Edison(VegapunkSatellite):
     def update_from_punkrecord(self) -> None:
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les API externes ou les paramètres du modèle LLM
+
+
+    def process_communication(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "innovation":
+            innovation_result = self.generate_innovation(message.get("domain"))
+            return {"status": "Traitement effectué", "result": innovation_result}
+        elif message.get("type") == "logic_problem":
+            logic_result = self.solve_logic_problem(message.get("problem"))
+            return {"status": "Traitement effectué", "result": logic_result}
+        elif message.get("type") == "data_analysis":
+            analysis_result = self.analyze_data(message.get("data"))
+            return {"status": "Traitement effectué", "result": analysis_result}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+

@@ -6,6 +6,7 @@ from satellites.base_satellite import VegapunkSatellite
 import logging
 import subprocess
 import time
+from utils.logger import get_logger
 
 
 role = "Sécurité et Automatisation"
@@ -16,8 +17,10 @@ class Atlas(VegapunkSatellite):
         self.monitored_directories = []
         self.email_config ={}
         self.external_systems = {}
-        logging.basicConfig(filename='atlas.log', level=logging.INFO)
-
+        # logging.basicConfig(filename='atlas.log', level=logging.INFO)
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example usi
+        self.logger = get_logger("atlas")
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
         if task_type == "monitor_directory":
@@ -123,3 +126,38 @@ class Atlas(VegapunkSatellite):
             "Monitored_directories": self.monitored_directories,
             "Email_config": self.email_config
         })
+
+
+
+    def process_communication(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "email_config":
+            self.email_config = message.get("content")
+            return {"status": "Configuration email mise à jour", "result": self.email_config}
+        elif message.get("type") == "system_command":
+            command_result = self.execute_system_command(message.get("command"))
+            return {"status": "Commande système exécutée", "result": command_result}
+        elif message.get("type") == "file_management":
+            file_result = self.manage_files(message.get("action"), message.get("file_path"))
+            return {"status": "Gestion de fichier effectuée", "result": file_result}
+        elif message.get("type") == "monitor_directory":
+            monitor_result = self.monitor_directory(message.get("directory"))
+            return {"status": "Surveillance de répertoire effectuée", "result": monitor_result}
+        elif message.get("type") == "email":
+            email_result = self.send_email(message.get("to"), message.get("subject"), message.get("body"))
+            return {"status": "Email envoye", "result": email_result}
+        elif message.get("type") == "status_report":
+            result = self.report_status()
+            return {"status": "Rapport de status généré", "result": result}
+        elif message.get("type") == "check_changes":
+            changes = self.check_directory_changes()
+            return {"status": "Changements vérifiés", "result": changes}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)

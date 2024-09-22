@@ -1,7 +1,7 @@
-
-
 from abc import ABC, abstractmethod
-from typing import  Dict, Any
+from typing import  Dict, Any,Optional
+import logging
+
 
 
 class VegapunkSatellite(ABC):
@@ -60,12 +60,34 @@ class VegapunkSatellite(ABC):
         # Methode pour mettre a jour de la base de connaissance local du satellite depuis punkrecord
         pass
 
-    # def communicate_with_other_satellite(self, satellite: VegapunkSatellite, message: Dict[str, Any]) -> Dict[str, Any]:
-    #     # Methode pour communiquer avec un autre satellite
-    #     pass
+        # Methode pour communiquer avec un autre satellite
+    def communicate_with_other_satellite(self, satellite: 'VegapunkSatellite', message: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        if not isinstance(satellite, VegapunkSatellite):
+            logging.error(f"Le satellite spécifié n'est pas valide :{type(satellite)}")
+            return None
 
-#
-#
+        try:
+            response = satellite.receive_communication(self.name,message)
+            logging.info(f"Communication avec {satellite.name} : {response}")
+            return response
+        except Exception as e:
+            logging.error(f"Erreur lors de la communication avec {satellite.name} : {str(e)}")
+            return None
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} a recu un message de : {sender_name}")
+        return self.process_communication(sender_name, message)
+
+    @abstractmethod
+    def process_communication(self,sender_name:str,message:Dict[str,Any])->Dict[str,Any]:
+        """
+        traite le message recu d'un autre satellite
+        a implementer dans chaque classe de satellite specifique
+        """
+        pass
+
+
+
 # class Satellite:
 #     def __init__(self, name, specialty):
 #         self.name = name

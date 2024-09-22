@@ -8,5 +8,7 @@ scipy
 scikit-learn
 pandas
 psutil
-
-
+python-dotenv
+beautifulsoup4
+langchain-anthropic
+mistralai

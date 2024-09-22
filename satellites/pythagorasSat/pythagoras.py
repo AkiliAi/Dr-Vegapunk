@@ -6,9 +6,25 @@ import matplotlib.pyplot as plt
 import io
 import base64
 import random
+from utils.logger import get_logger
+import pandas as pd
+from bs4 import BeautifulSoup
+import json
+import os
+from dotenv import load_dotenv
+from openai import OpenAI
+import requests
 import logging
 
+load_dotenv()
 
+
+# client = OpenAI(os.getenv("LLM_API_KEY"))
+#
+# client =OpenAI(
+#     organization="LLM_API_KEY",
+# )
+#
 
 role = "mathématiques, statistiques et analyse de données"
 fonction = "Effectuer des calculs complexes et analyser des ensembles de données"
@@ -16,6 +32,13 @@ fonction = "Effectuer des calculs complexes et analyser des ensembles de donnée
 class Pythagoras(VegapunkSatellite):
     def __init__(self):
         super().__init__(name="Pythagoras", specialty="Role")
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example using OpenAI's API
+        self.research_databases = {
+            "scientific": "https://api.example-scientific-db.com/search",
+            "news": "https://api.example-news-db.com/search",
+            "general": "https://api.example-general-db.com/search"
+        }
         self.mathematical_constants = {
             "pi": np.pi,
             "e": np.e,
@@ -23,6 +46,7 @@ class Pythagoras(VegapunkSatellite):
         }
         self.resources = {}
         self.external_apis = {}
+        self.logger = get_logger("pythagoras")
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get('type')
@@ -32,8 +56,17 @@ class Pythagoras(VegapunkSatellite):
             return self._analyze_dataset(task.get('data'))
         elif task_type == "statistical_test":
             return self._perform_statistical_test(task.get('test_type'), task.get('data'))
+        if task_type == "analyze_data":
+            result = self.analyze_data_2(task["data"])
+        elif task_type == "conduct_research":
+            result = self.conduct_research(task["topic"], task.get("depth", "medium"))
+        elif task_type == "extract_information":
+            result = self.extract_information(task["content"], task.get("keywords", []))
         else:
-            return {"error": "Tâche non reconnue"}
+            result = f"Tâche non reconnue : {task_type}"
+
+        self.log_activity(f"Tâche traitée : {task_type}, Résultat : {result}")
+        return {"result": result}
 
     def _perform_calculation(self, operation: str, values: List[float]) -> Dict[str, Any]:
         if not operation or not values:
@@ -111,6 +144,92 @@ class Pythagoras(VegapunkSatellite):
         except Exception as e:
             return {"error": f"Erreur lors du test statistique: {str(e)}"}
 
+    def analyze_data_2(self, data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        df = pd.DataFrame(data)
+        analysis = {
+            "summary": df.describe().to_dict(),
+            "correlations": df.corr().to_dict(),
+            "trends": self._detect_trends(df),
+            "outliers": self._detect_outliers(df)
+        }
+        return analysis
+
+    def conduct_research(self, topic: str, depth: str = "medium") -> Dict[str, Any]:
+        research_results = {}
+        for db_name, db_url in self.research_databases.items():
+            research_results[db_name] = self._search_database(db_url, topic, depth)
+
+        summary = self._summarize_research(topic, research_results)
+        return {
+            "topic": topic,
+            "depth": depth,
+            "results": research_results,
+            "summary": summary
+        }
+
+    def extract_information(self, content: str, keywords: List[str] = []) -> Dict[str, Any]:
+        prompt = f"Extraire les informations clés du texte suivant, en se concentrant sur les mots-clés {keywords} si fournis : {content}"
+        extracted_info = self._query_llm(prompt)
+
+        return {
+            "original_content_length": len(content),
+            "extracted_information": extracted_info,
+            "keywords_used": keywords
+        }
+
+    def _detect_trends(self, df: pd.DataFrame) -> Dict[str, Any]:
+        trends = {}
+        for column in df.select_dtypes(include=[np.number]).columns:
+            trend = stats.linregress(range(len(df)), df[column])
+            trends[column] = {
+                "slope": trend.slope,
+                "intercept": trend.intercept,
+                "r_value": trend.rvalue,
+                "p_value": trend.pvalue,
+                "trend": "increasing" if trend.slope > 0 else "decreasing"
+            }
+        return trends
+
+    def _detect_outliers(self, df: pd.DataFrame) -> Dict[str, List[Any]]:
+        outliers = {}
+        for column in df.select_dtypes(include=[np.number]).columns:
+            z_scores = np.abs(stats.zscore(df[column]))
+            outliers[column] = df[column][z_scores > 3].tolist()
+        return outliers
+
+    def _search_database(self, db_url: str, topic: str, depth: str) -> List[Dict[str, Any]]:
+        # Simuler une recherche dans une base de données externe
+        # Dans une implémentation réelle, cela ferait un appel API à la base de données
+        return [
+            {"title": f"Résultat 1 pour {topic}", "summary": f"Résumé du résultat 1 pour {topic}"},
+            {"title": f"Résultat 2 pour {topic}", "summary": f"Résumé du résultat 2 pour {topic}"}
+        ]
+
+    def _summarize_research(self, topic: str, research_results: Dict[str, List[Dict[str, Any]]]) -> str:
+        # Utiliser le LLM pour résumer les résultats de recherche
+        research_summary = json.dumps(research_results)
+        prompt = f"Résumez les résultats de recherche suivants sur le sujet '{topic}' : {research_summary}"
+        return self._query_llm(prompt)
+
+    def _query_llm(self, prompt: str) -> str:
+        headers = {
+            "Authorization": f"Bearer {self.llm_api_key}",
+            "Content-Type": "application/json"
+        }
+        data = {
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": prompt}]
+        }
+        try:
+            response = requests.post(self.llm_api_url, headers=headers, json=data)
+            response.raise_for_status()
+            return response.json()['choices'][0]['message']['content']
+        except requests.RequestException as e:
+            return f"Erreur lors de la requête LLM : {str(e)}"
+
+    def log_activity(self, activity: str):
+        logging.info(activity)
+
     def communicate_with_stellar(self, message: Dict[str, Any]) -> Dict[str, Any]:
         print(f"{self.name} envoie un message à Stellar: {message}")
         return {"Statut": "Message reçu", "message": "Stellar a bien reçu le message de Pythagoras"}
@@ -127,3 +246,32 @@ class Pythagoras(VegapunkSatellite):
             "Opérations_disponibles": ["mean", "median", "std_dev", "correlation"]
         })
         return status
+
+
+    def process_communication(self,sender_name:str,message:Dict[str,Any]) ->Dict[str,Any]:
+        if message.get("type")== "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "research":
+            research_result = self.conduct_research(message.get("topic"), message.get("depth"))
+            return {"status": "Recherche effectuée", "result": research_result}
+        elif message.get("type") == "information_extraction":
+            info_result = self.extract_information(message.get("content"), message.get("keywords", []))
+            return {"status": "Extraction d'information effectuée", "result": info_result}
+        elif message.get("type") == "update_constants":
+            self.mathematical_constants.update(message.get("constants", {}))
+            return {"status": "Constantes mises à jour", "result": self.mathematical_constants}
+        elif message.get("type") == "update_resources":
+            self.resources.update(message.get("resources", {}))
+            return {"status": "Ressources mises à jour", "result": self.resources}
+        elif message.get("type") == "update_external_apis":
+            self.external_apis.update(message.get("apis", {}))
+            return {"status": "APIs mises à jour", "result": self.external_apis}
+
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
+
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)
+

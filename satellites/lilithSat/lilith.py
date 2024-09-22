@@ -1,7 +1,10 @@
+import os
+
 from satellites.base_satellite import VegapunkSatellite
 from typing import Dict, Any, List
-import logging
 import random
+from utils.logger import get_logger
+import logging
 
 role = " Explorer des solution non conventionnel , creatove,voir risqué"
 
@@ -13,9 +16,13 @@ class Lilith(VegapunkSatellite):
         super().__init__(name="Lilith", specialty=role)
         self.idea_categories = ["Technologie", "Art", "Science", "Société", "Environnement"]
         self.innovation_levels = ["Incrémentale", "Radicale", "Disruptive"]
-        self.unconventional_approaches = ["Pensée inversée", "Analogies lointaines", "Combinaison aléatoire","Contraintes extrêmes"]
-        logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
+        self.unconventional_approaches = ["Pensée inversée", "Analogies lointaines", "Combinaison aléatoire",
+                                          "Contraintes extrêmes"]
+        # logging.basicConfig(filename='lilith_log.txt', level=logging.INFO)
         self.external_apis = {}
+        self.llm_api_key = os.getenv("MISTRAL_API_KEY")
+        self.llm_api_url = "https://api.mistral.ai/v1/chat/completions"  # Example usi
+        self.logger = get_logger("lilith")
 
     def process_task(self, task: Dict[str, Any]) -> Dict[str, Any]:
         task_type = task.get("type")
@@ -113,4 +120,28 @@ class Lilith(VegapunkSatellite):
         self.log_activity("Mise à jour depuis PunkRecord")
         # Ici, vous pourriez implémenter la logique pour mettre à jour les approches créatives ou les domaines d'innovation
 
+    def process_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        if message.get("type") == "task":
+            task_result = self.process_task(message.get("task"))
+            return {"status": "Traitement effectué", "result": task_result}
+        elif message.get("type") == "generate_idea":
+            idea_result = self.generate_creative_idea(message.get("domain"))
+            return {"status": "Idée générée", "result": idea_result}
+        elif message.get("type") == "solve_problem":
+            solution_result = self.propose_unconventional_solution(message.get("problem"))
+            return {"status": "Solution proposée", "result": solution_result}
+        elif message.get("type") == "brainstorm":
+            brainstorm_result = self.conduct_brainstorming_session(message.get("topic"), message.get("duration"))
+            return {"status": "Session de brainstorming effectuée", "result": brainstorm_result}
+        elif message.get("type") == "challenge_assumption":
+            assumption_result = self.challenge_assumption(message.get("assumption"))
+            return {"status": "Assomption challengée", "result": assumption_result}
+        elif message.get("type") == "status_report":
+            result = self.report_status()
+            return {"status": "Rapport de status généré", "result": result}
+        else:
+            return {"status": "Erreur", "result": "Type de tâche inconnu"}
 
+    def receive_communication(self, sender_name: str, message: Dict[str, Any]) -> Dict[str, Any]:
+        logging.info(f"{self.name} received communication from {sender_name}")
+        return self.process_communication(sender_name, message)

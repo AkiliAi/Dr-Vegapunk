@@ -21,6 +21,17 @@ def test_shaka():
 
     logic_result = shaka.process_task(test_logic)
     print("Résultat de la tâche de logique:", logic_result)
+    # Ajout de tâches à la file d'attente
+    shaka.add_task({"type": "ethical_check",
+                    "content": "Les gens devraient toujours dire la vérité, même si cela peut blesser quelqu'un."})
+    shaka.add_task({"type": "fact_check", "claim": "La Terre est plate."})
+    shaka.add_task({"type": "provide_recommendations", "content": "Tous les immigrants devraient être expulsés."})
+    shaka.add_task({"type": "toggle_ethical_filter"})
+
+    # Traitement des tâches
+    while task := shaka.get_next_task():
+        result = shaka.process_task(task)
+        print(f"Résultat de la tâche : {result}")
 
     print("Connexion au Punkrecord")
     shaka.update_from_punkrecord()

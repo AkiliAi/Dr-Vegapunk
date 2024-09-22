@@ -57,6 +57,28 @@ def test_pythagoras():
     stat_result = pythagoras.process_task(stat_task)
     print("Résultat du test statistique:", stat_result)
     print("\n\n")
+    # Exemple de données pour l'analyse
+    sample_data = [
+        {"x": 1, "y": 2, "z": 3},
+        {"x": 2, "y": 4, "z": 6},
+        {"x": 3, "y": 6, "z": 9},
+        {"x": 4, "y": 8, "z": 12},
+        {"x": 5, "y": 10, "z": 15}
+    ]
+
+    # Ajout de tâches à la file d'attente
+    pythagoras.add_task({"type": "analyze_data", "data": sample_data})
+    pythagoras.add_task({"type": "conduct_research", "topic": "Intelligence Artificielle", "depth": "deep"})
+    pythagoras.add_task({"type": "extract_information",
+                         "content": "L'intelligence artificielle (IA) est un domaine de l'informatique qui vise à créer des machines capables de simuler l'intelligence humaine. Elle englobe des sous-domaines tels que l'apprentissage automatique, le traitement du langage naturel et la vision par ordinateur.",
+                         "keywords": ["apprentissage automatique", "traitement du langage naturel"]})
+
+    # Traitement des tâches
+    while task := pythagoras.get_next_task():
+        result = pythagoras.process_task(task)
+        print(f"Résultat de la tâche : {result}")
+
+    print("\n\n")
 
     print("Connexion au Punkrecord")
     pythagoras.update_from_punkrecord()
